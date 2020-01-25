@@ -18,15 +18,20 @@ class BeamSearchDecoder(object):
         score = F.log_softmax(logits, dim=-1) / length_penalty + beam_scores.unsqueeze(-1)
         return score
 
-    def decode(self, features, tags):
+    def decode(self, features, tags, actions, scene_feats):
         with torch.no_grad():
             features = features.to(device=self.device)
             tags = tags.to(device=self.device)
+            actions = actions.to(device=self.device)
+            scene_feats = scene_feats.to(device=self.device)
             features = self.model.batch_norm(features)
             tags_embed = self.model.word_embedding(tags)
+            actions_embed = self.model.word_embedding(actions)
             features_proj = self.model.project_features(features, self.model.feats_proj_layer)
             tags_proj = self.model.project_features(tags_embed, self.model.tags_proj_layer)
-            hidden_states, cell_states = self.model.get_initial_lstm(features_proj, tags_proj)
+            actions_proj = self.model.project_features(actions_embed, self.model.actions_proj_layer)
+            scene_feats_proj = self.model.project_features(scene_feats, self.model.scene_feats_proj_layer)
+            hidden_states, cell_states = self.model.get_initial_lstm(features_proj, tags_proj, actions_proj, scene_feats_proj)
             beam_hidden_states = hidden_states.unsqueeze(0)
             beam_cell_states = cell_states.unsqueeze(0)
 
@@ -50,10 +55,13 @@ class BeamSearchDecoder(object):
                 beam_alpha = []
 
                 for b in range(beam_size):
-                    logits, feats_alpha, tags_alpha, (hidden_states, cell_states) = self.model(features,
+                    logits, feats_alpha, tags_alpha, actions_alpha, (hidden_states, cell_states) = self.model(features,
                                                                             features_proj,
                                                                             tags_embed,
                                                                             tags_proj,
+                                                                            actions_embed,
+                                                                            actions_proj,
+                                                                            scene_feats_proj,
                                                                             beam_inputs[:, b],
                                                                             beam_hidden_states[b],
                                                                             beam_cell_states[b])

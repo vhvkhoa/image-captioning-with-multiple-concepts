@@ -18,7 +18,7 @@ import torch.nn.functional as F
 
 class CaptionGenerator(nn.Module):
     def __init__(self, feature_dim=[196, 512], num_tags=23, embed_dim=512, hidden_dim=1024,
-                  prev2out=True, ctx2out=True, enable_selector=True, dropout=0.5, len_vocab=10000):
+                  prev2out=True, ctx2out=True, enable_selector=True, dropout=0.5, len_vocab=10000, **kwargs):
         super(CaptionGenerator, self).__init__()
         self.prev2out = prev2out
         self.ctx2out = ctx2out
@@ -28,22 +28,31 @@ class CaptionGenerator(nn.Module):
         self.L = feature_dim[0] #number of regions
         self.D = feature_dim[1] #size of each region feature
         self.T = num_tags #number of tags
+        self.A = kwargs.get('num_actions', 0)# number of actions
         self.M = embed_dim
-        self.F = self.D + self.M # Fusion
+        self.S = kwargs.get('scene_dim', 0)
+        self.AD = kwargs.get('action_dim', 0)
+        self.F = self.D + self.M + self.AD + self.SD # Fusion
         self.H = hidden_dim
 
         # Trainable parameters :
-        self.lstm_cell = nn.LSTM(self.D + 2 * self.M, self.H, dropout=0.5)
+        self.lstm_cell = nn.LSTM(self.D + self.M + self.AD + self.SD, self.H, dropout=0.5)
         self.hidden_state_init_layer = nn.Linear(self.D, self.H)
         self.cell_state_init_layer = nn.Linear(self.D, self.H)
         self.embedding_lookup = nn.Embedding(self.V, self.M)
+
         self.feats_proj_layer = nn.Linear(self.D, self.D)
-        self.tags_proj_layer = nn.Linear(self.M, self.D)
+        self.tags_proj_layer = nn.Linear(self.M, self.M)
+        self.actions_proj_layer = nn.Linear(self.AD, self.AD)
+        self.scene_feats_proj_layer = nn.Linear(self.S, self.S)
+
         self.hidden_to_attention_layer = nn.Linear(self.H, self.D)
         self.attention_layer = nn.Linear(self.D, 1)
 
         self.features_selector_layer = nn.Linear(self.H, 1)
         self.tags_selector_layer = nn.Linear(self.H, 1)
+        self.actions_selector_layer = nn.Linear(self.H, 1)
+        self.scene_feats_selector_layer = nn.Linear(self.H, 1)
 
         self.hidden_to_embedding_layer = nn.Linear(self.H, self.M)
         self.features_context_to_embedding_layer = nn.Linear(self.D, self.M)
@@ -53,11 +62,13 @@ class CaptionGenerator(nn.Module):
         self.features_batch_norm = nn.BatchNorm1d(self.L)
         self.dropout = nn.Dropout(p=dropout)
 
-    def get_initial_lstm(self, feats_proj, tags_proj):
+    def get_initial_lstm(self, feats_proj, tags_proj, actions_proj, scene_feats_proj):
         feats_mean = torch.mean(feats_proj, 1)
         tags_mean = torch.mean(tags_proj, 1)
-        h = torch.tanh(self.hidden_state_init_layer(feats_mean + tags_mean)).unsqueeze(0)
-        c = torch.tanh(self.cell_state_init_layer(feats_mean + tags_mean)).unsqueeze(0)
+        actions_mean = torch.mean(actions_proj, 1)
+
+        h = torch.tanh(self.hidden_state_init_layer(feats_mean + tags_mean + actions_mean + scene_feats_proj)).unsqueeze(0)
+        c = torch.tanh(self.cell_state_init_layer(feats_mean + tags_mean + actions_mean + scene_feats_proj)).unsqueeze(0)
         return c, h
 
     def project_features(self, features, project_layer):
@@ -87,12 +98,12 @@ class CaptionGenerator(nn.Module):
         context = context * beta
         return context, beta
 
-    def _decode_lstm(self, x, h, feats_context, tags_context):
+    def _decode_lstm(self, x, h, feats_context, tags_context, actions_context, scene_context):
         h = self.dropout(h)
         h_logits = self.hidden_to_embedding_layer(h)
 
         if self.ctx2out:
-            h_logits += self.features_context_to_embedding_layer(feats_context) + tags_context
+            h_logits += self.features_context_to_embedding_layer(feats_context) + tags_context + actions_context + scene_context
 
         if self.prev2out:
             h_logits += x
@@ -102,21 +113,24 @@ class CaptionGenerator(nn.Module):
         out_logits = self.embedding_to_output_layer(h_logits)
         return out_logits
     
-    def forward(self, features, features_proj, tags_embed, tags_proj, past_captions, hidden_states, cell_states):
+    def forward(self, features, features_proj, tags_embed, tags_proj, actions_embed, actions_proj, scene_feats_proj, past_captions, hidden_states, cell_states):
         emb_captions = self.word_embedding(inputs=past_captions)
 
         feats_context, feats_alpha = self._attention_layer(features, features_proj, hidden_states)
         tags_context, tags_alpha = self._attention_layer(tags_embed, tags_proj, hidden_states)
+        actions_context, actions_alpha = self._attention_layer(actions_embed, actions_proj, hidden_states)
 
         if self.enable_selector:
             feats_context, feats_beta = self._selector(feats_context, hidden_states, self.features_selector_layer)
             tags_context, tags_beta = self._selector(tags_context, hidden_states, self.tags_selector_layer)
+            actions_context, actions_beta = self._selector(actions_context, hidden_states, self.actions_selector_layer)
+            scene_context, scenes_beta = self._selector(scene_feats_proj, hidden_states, self.scene_feats_selector_layer)
 
-        next_input = torch.cat((emb_captions, feats_context, tags_context), 1).unsqueeze(0)
+        next_input = torch.cat((emb_captions, feats_context, tags_context, actions_context, scene_context), 1).unsqueeze(0)
 
         print(hidden_states.size())
         output, (next_hidden_states, next_cell_states) = self.lstm_cell(next_input, (hidden_states, cell_states))
 
-        logits = self._decode_lstm(emb_captions, output.squeeze(0), feats_context, tags_context)
+        logits = self._decode_lstm(emb_captions, output.squeeze(0), feats_context, tags_context, actions_context, scene_context)
 
-        return logits, feats_alpha, tags_alpha, (next_hidden_states, next_cell_states)
+        return logits, feats_alpha, tags_alpha, actions_alpha, (next_hidden_states, next_cell_states)
