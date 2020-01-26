@@ -243,7 +243,6 @@ class CaptioningSolver(object):
             sum_tags_alphas = torch.sum(nn.utils.rnn.pad_sequence(tags_alphas), 1)
             sum_actions_alphas = torch.sum(nn.utils.rnn.pad_sequence(actions_alphas), 1)
             feats_alphas_reg = self.alpha_c * self.alpha_criterion(sum_loc_alphas, (seq_lens / self.model.L).repeat(1, self.model.L))
-            print(sum_tags_alphas.size(), seq_lens, self.model.T)
             tags_alphas_reg = self.alpha_c * self.alpha_criterion(sum_tags_alphas, (seq_lens / self.model.T).repeat(1, self.model.T))
             actions_alphas_reg = self.alphas_c * self.alpha_criterion(sum_actions_alphas, (seq_lens / self.model.A).repeat(1, self.model.A))
             loss += feats_alphas_reg + tags_alphas_reg + actions_alphas_reg
