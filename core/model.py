@@ -32,7 +32,6 @@ class CaptionGenerator(nn.Module):
         self.M = embed_dim
         self.S = kwargs.get('scene_dim', 0)
         self.AD = kwargs.get('action_dim', 0)
-        self.F = self.D + self.M + self.AD + self.SD # Fusion
         self.H = hidden_dim
 
         # Trainable parameters :
