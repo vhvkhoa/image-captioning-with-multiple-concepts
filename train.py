@@ -45,7 +45,7 @@ def main():
     # load val dataset to print out scores every epoch
 
     model = CaptionGenerator(feature_dim=[args.image_feature_size, args.image_feature_depth], 
-                                    num_tags=21, embed_dim=args.embed_dim,
+                                    num_tags=23, embed_dim=args.embed_dim,
                                     hidden_dim=args.lstm_hidden_size, prev2out=args.prev2out, len_vocab=len(word_to_idx),
                                     ctx2out=args.ctx2out, enable_selector=args.enable_selector, dropout=args.dropout,
                                     action_dim=args.embed_dim, scene_dim=512).to(device=args.device)
