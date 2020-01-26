@@ -152,7 +152,8 @@ def _build_vocab(captions_data, tag_names_data, threshold=1, vocab_size=0):
     for name in tag_names:
         counter[name] += 1
         
-    if vocab_size > 0: top_n_counter = [w for w, n in counter.most_common(vocab_size)]
+    if vocab_size > 0:
+        top_n_counter = [w for w, n in counter.most_common(vocab_size)]
         vocab = [word for word in counter if counter[word] >= threshold and word in top_n_counter]
     else:
         vocab = [word for word in counter if counter[word] >= threshold]
