@@ -46,9 +46,11 @@ parser.add_argument('-v', '--vocab_size', type=int, default=0,
 parser.add_argument('-e' '--encoder_name', type=str, default='resnet101', help='CNN model name used to extract features of images.'+
                                                              'It should be vgg or resnet followed by a number indicating number of layers in the model (e.g vgg16, vgg19, resnet50, resnet101).')
 
-parser.add_argument('-n', '--tag_names_file', type=str, default='data/9k.names', help='Names of concepts used by Yolo9000.')
+parser.add_argument('-n', '--tag_names_file', type=str, default='data/annotations/concept_names.txt', help='Names of concepts used by Yolo9000.')
+parser.add_argument('-a', '--action_names_file', type=str, default='data/annotations/action_names.txt', help='Names of actions.')
 
 parser.add_argument('-i', '--info_test', type=str, default='', help='JSON file contained info of test set, would be created if not given.')
+
 
 def _process_captions_data(phase, ann_file=None, max_length=None):
     if phase in ['val', 'train']:
@@ -96,7 +98,7 @@ def _process_concept_data(phase, word_to_idx, concept_file, max_keep=20, max_len
         concepts = ' '.join([concept[0] for concept in concepts[:max_keep]]).split(' ')
         concepts = list(set([word_to_idx[concept] for concept in concepts]))
         concepts_dict[file_name] = concepts
-        max_len = len(concepts) if max_len < len(concepts) else max_len
+        max_len = max(max_len, len(concepts))
     
     print('Max number of word-concepts: ', max_len)
     for file_name in concepts_dict.keys():
@@ -107,6 +109,28 @@ def _process_concept_data(phase, word_to_idx, concept_file, max_keep=20, max_len
 
     save_json(concepts_dict, os.path.join('data', phase, os.path.basename(concept_file)))
     print('Finished building %s concept vectors' % phase)
+
+
+def _process_action_data(phase, actions_root, actions_file_path, word_to_idx):
+    actions_dict = {}
+    actions_dir = os.path.join(actions_root, phase)
+    max_len = 0
+    
+    for file_name in os.listdir(actions_dir):
+        annotation = load_json(os.path.join(file_name, file_name))
+        image_name = os.path.splitext(annotation['video'])[0]
+        actions = annotation['clip'][0]['label'].split()
+        actions = list(set([word_to_idx[word] for word in actions]))
+        actions_dict[image_name] = actions
+        max_len = max(max_len, len(actions))
+    
+    for image_name, actions in actions_dict.items():
+        for _ in range(max_len - len(actions)):
+            actions.append(word_to_idx['<NULL>'])
+        actions_dict[image_name] = actions
+
+    save_json(actions_dict, actions_file_path)
+    print('Finished building %s action vectors' % phase)
 
 
 def _build_vocab(captions_data, tag_names_data, threshold=1, vocab_size=0):
@@ -193,12 +217,14 @@ def main():
     # names list
     with open(args.tag_names_file, 'r') as f:
         tag_names_data = f.read()
+    with open(args.action_names_file, 'r') as f:
+        action_names_data = f.read()
 
     for phase, ann_file, concept_file in zip(phases, ann_files, concept_files):
         captions_data = _process_captions_data(phase, ann_file=ann_file, max_length=max_length)
 
         if phase == 'train':
-            word_to_idx = _build_vocab(captions_data, tag_names_data, threshold=word_count_threshold, vocab_size=vocab_size)
+            word_to_idx = _build_vocab(captions_data, tag_names_data, action_names_data, threshold=word_count_threshold, vocab_size=vocab_size)
             save_json(word_to_idx, './data/word_to_idx.json')
 
             captions_data = _build_caption_vector(captions_data, word_to_idx=word_to_idx)
