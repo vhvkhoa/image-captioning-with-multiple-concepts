@@ -35,7 +35,7 @@ class CaptionGenerator(nn.Module):
         self.H = hidden_dim
 
         # Trainable parameters :
-        self.lstm_cell = nn.LSTM(self.D + self.M + self.AD + self.S, self.H, dropout=0.5)
+        self.lstm_cell = nn.LSTM(self.M + self.D + self.M + self.AD + self.S, self.H, dropout=0.5)
         self.hidden_state_init_layer = nn.Linear(self.H, self.H)
         self.cell_state_init_layer = nn.Linear(self.H, self.H)
         self.embedding_lookup = nn.Embedding(self.V, self.M)
@@ -129,7 +129,6 @@ class CaptionGenerator(nn.Module):
 
         next_input = torch.cat((emb_captions, feats_context, tags_context, actions_context, scene_context), 1).unsqueeze(0)
 
-        print(hidden_states.size())
         output, (next_hidden_states, next_cell_states) = self.lstm_cell(next_input, (hidden_states, cell_states))
 
         logits = self._decode_lstm(emb_captions, output.squeeze(0), feats_context, tags_context, actions_context, scene_context)
