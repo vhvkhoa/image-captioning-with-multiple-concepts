@@ -139,7 +139,7 @@ def _process_action_data(phase, actions_root, actions_file_path, word_to_idx):
     print('Finished building %s action vectors' % phase)
 
 
-def _build_vocab(captions_data, tag_names_data, threshold=1, vocab_size=0):
+def _build_vocab(captions_data, tag_names_data, action_names_data, threshold=1, vocab_size=0):
     annotations = captions_data['annotations']
     counter = Counter()
     for annotation in annotations:
@@ -150,6 +150,10 @@ def _build_vocab(captions_data, tag_names_data, threshold=1, vocab_size=0):
 
     tag_names = tag_names_data.replace('\n', ' ').split(' ')
     for name in tag_names:
+        counter[name] += 1
+    
+    action_names = action_names_data.replace('\n', ' ').split(' ')
+    for name in action_names:
         counter[name] += 1
         
     if vocab_size > 0:
