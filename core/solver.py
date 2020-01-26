@@ -26,6 +26,7 @@ def pack_collate_fn(batch):
     seq_lens = torch.tensor([[len(cap_vec)] for cap_vec in len_sorted_cap_vecs], dtype=torch.float)
 
     packed_cap_vecs = nn.utils.rnn.pack_sequence([torch.from_numpy(cap_vec) for cap_vec in len_sorted_cap_vecs])
+    cap, batch = packed_cap_vecs
 
     return len_sorted_features, len_sorted_tags, len_sorted_actions, len_sorted_scene_feats, packed_cap_vecs, len_sorted_captions, seq_lens
 
