@@ -36,14 +36,14 @@ class CaptionGenerator(nn.Module):
 
         # Trainable parameters :
         self.lstm_cell = nn.LSTM(self.D + self.M + self.AD + self.S, self.H, dropout=0.5)
-        self.hidden_state_init_layer = nn.Linear(self.D, self.H)
-        self.cell_state_init_layer = nn.Linear(self.D, self.H)
+        self.hidden_state_init_layer = nn.Linear(self.H, self.H)
+        self.cell_state_init_layer = nn.Linear(self.H, self.H)
         self.embedding_lookup = nn.Embedding(self.V, self.M)
 
-        self.feats_proj_layer = nn.Linear(self.D, self.D)
-        self.tags_proj_layer = nn.Linear(self.M, self.M)
-        self.actions_proj_layer = nn.Linear(self.AD, self.AD)
-        self.scene_feats_proj_layer = nn.Linear(self.S, self.S)
+        self.feats_proj_layer = nn.Linear(self.D, self.H)
+        self.tags_proj_layer = nn.Linear(self.M, self.H)
+        self.actions_proj_layer = nn.Linear(self.AD, self.H)
+        self.scene_feats_proj_layer = nn.Linear(self.S, self.H)
 
         self.hidden_to_attention_layer = nn.Linear(self.H, self.D)
         self.features_attention_layer = nn.Linear(self.D, 1)
@@ -87,8 +87,8 @@ class CaptionGenerator(nn.Module):
         return embed_inputs
 
     def _attention(self, features, features_proj, hidden_states, attention_layer):
-        h_att = F.relu(features_proj + self.hidden_to_attention_layer(hidden_states[-1]).unsqueeze(1))    # (N, L, D)
-        loc, dim = features_proj.size()[1:]
+        h_att = F.relu(self.hidden_to_attention_layer(features_proj + hidden_states[-1]).unsqueeze(1))    # (N, L, D)
+        loc, dim = features.size()[1:]
         out_att = self.attention_layer(h_att.view(-1, dim)).view(-1, loc)   # (N, L)
         alpha = F.softmax(out_att, dim=-1)
         context = torch.sum(features * alpha.unsqueeze(2), 1)   #(N, D)
