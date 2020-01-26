@@ -36,7 +36,7 @@ class CaptionGenerator(nn.Module):
         self.H = hidden_dim
 
         # Trainable parameters :
-        self.lstm_cell = nn.LSTM(self.D + self.M + self.AD + self.SD, self.H, dropout=0.5)
+        self.lstm_cell = nn.LSTM(self.D + self.M + self.AD + self.S, self.H, dropout=0.5)
         self.hidden_state_init_layer = nn.Linear(self.D, self.H)
         self.cell_state_init_layer = nn.Linear(self.D, self.H)
         self.embedding_lookup = nn.Embedding(self.V, self.M)

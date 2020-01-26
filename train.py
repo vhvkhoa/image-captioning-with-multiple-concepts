@@ -47,7 +47,8 @@ def main():
     model = CaptionGenerator(feature_dim=[args.image_feature_size, args.image_feature_depth], 
                                     num_tags=21, embed_dim=args.embed_dim,
                                     hidden_dim=args.lstm_hidden_size, prev2out=args.prev2out, len_vocab=len(word_to_idx),
-                                    ctx2out=args.ctx2out, enable_selector=args.enable_selector, dropout=args.dropout).to(device=args.device)
+                                    ctx2out=args.ctx2out, enable_selector=args.enable_selector, dropout=args.dropout,
+                                    action_dim=args.embed_dim, scene_dim=512).to(device=args.device)
 
     solver = CaptioningSolver(model, word_to_idx, train_data, val_data, n_time_steps=args.time_steps,
                                     batch_size=args.batch_size, beam_size=args.beam_size, optimizer=args.optimizer, 
