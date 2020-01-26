@@ -20,6 +20,12 @@ CONCEPT_FILES = {
     'val': 'val_concepts.json',
     'test': 'test_concepts.json'
 }
+ACTION_ROOT = 'data/annotations/actions/'
+ACTION_FILES = {
+    'train': 'train_actions.json',
+    'val': 'val_actions.json',
+    'test': 'test_actions.json'
+}
 
 """Parameters for pre-processing"""
 parser = argparse.ArgumentParser(description='Pre-processing dataset.')
@@ -146,8 +152,7 @@ def _build_vocab(captions_data, tag_names_data, threshold=1, vocab_size=0):
     for name in tag_names:
         counter[name] += 1
         
-    if vocab_size > 0:
-        top_n_counter = [w for w, n in counter.most_common(vocab_size)]
+    if vocab_size > 0: top_n_counter = [w for w, n in counter.most_common(vocab_size)]
         vocab = [word for word in counter if counter[word] >= threshold and word in top_n_counter]
     else:
         vocab = [word for word in counter if counter[word] >= threshold]
@@ -203,6 +208,7 @@ def main():
     # annotation files and concept files to be processed
     ann_files = [os.path.join(ANN_DIR, ANN_FILES[phase]) for phase in phases]
     concept_files = [os.path.join(ANN_DIR, CONCEPT_FILES[phase]) for phase in phases]
+    action_files = [os.path.join('data', phase, ACTION_FILES[phase]) for phase in phases]
 
     # batch size for extracting feature vectors.
     batch_size = args.batch_size
@@ -220,7 +226,7 @@ def main():
     with open(args.action_names_file, 'r') as f:
         action_names_data = f.read()
 
-    for phase, ann_file, concept_file in zip(phases, ann_files, concept_files):
+    for phase, ann_file, concept_file, action_file in zip(phases, ann_files, concept_files, action_files):
         captions_data = _process_captions_data(phase, ann_file=ann_file, max_length=max_length)
 
         if phase == 'train':
@@ -235,6 +241,7 @@ def main():
 
         word_to_idx = load_json('./data/word_to_idx.json')
         _process_concept_data(phase, word_to_idx, concept_file)
+        _process_action_data(phase, ACTION_ROOT, action_file, word_to_idx)
 
     print('Finished processing caption data')
 
@@ -254,6 +261,7 @@ def main():
                 if not os.path.isdir(os.path.dirname(feature_path)):
                     os.makedirs(os.path.dirname(feature_path))
                 np.save(feature_path, feats[j])
+
 
 if __name__ == "__main__":
     main()
