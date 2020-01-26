@@ -48,11 +48,12 @@ class CocoCaptionDataset(Dataset):
 
     def __getitem__(self, index):
         item = self.dataset[index]
-        feature_path = os.path.join('data', self.split, 'feats', item['image_id'] + '.npy')
+        image_id = os.path.splitext(item['file_name'])[0]
+        feature_path = os.path.join('data', self.split, 'feats', image_id + '.npy')
         feature = np.load(feature_path)
-        concept = np.array(self.concepts[item['image_id']])
-        action = np.array(self.actions[item['image_id']])
-        scene_feature = np.load(os.path.join(self.scene_dir, self.split, item['image_id'] + '.npy'))
+        concept = np.array(self.concepts[image_id])
+        action = np.array(self.actions[image_id])
+        scene_feature = np.load(os.path.join(self.scene_dir, self.split, image_id + '.npy'))
 
         if self.split == 'train':
             caption = item['caption']
