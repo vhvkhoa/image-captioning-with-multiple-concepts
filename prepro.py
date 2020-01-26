@@ -100,10 +100,11 @@ def _process_concept_data(phase, word_to_idx, concept_file, max_keep=20, max_len
     max_len = 0
 
     for file_name, concepts in concepts_data.items():
+        image_id = os.path.splitext(os.path.basename(file_name))[0]
         concepts = sorted([[tag, int(raw_prob[:-1])] for tag, raw_prob in concepts], key=lambda x: x[1], reverse=True)
         concepts = ' '.join([concept[0] for concept in concepts[:max_keep]]).split(' ')
         concepts = list(set([word_to_idx[concept] for concept in concepts]))
-        concepts_dict[file_name] = concepts
+        concepts_dict[image_id] = concepts
         max_len = max(max_len, len(concepts))
     
     print('Max number of word-concepts: ', max_len)
@@ -262,7 +263,7 @@ def main():
             feats = feature_extractor(batch_images).data.cpu().numpy()
             feats = feats.reshape(-1, feats.shape[1]*feats.shape[2], feats.shape[-1])
             for j in range(len(feats)):
-                feature_path = './data/%s/feats/%s.npy' % (phase, batch_paths[j])
+                feature_path = './data/%s/feats/%s.npy' % (phase, os.path.splitext(batch_paths[j])[0])
                 if not os.path.isdir(os.path.dirname(feature_path)):
                     os.makedirs(os.path.dirname(feature_path))
                 np.save(feature_path, feats[j])
