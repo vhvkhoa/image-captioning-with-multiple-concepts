@@ -39,7 +39,7 @@ class BeamSearchDecoder(object):
 
             cand_scores = torch.zeros(batch_size, device=self.device)
             cand_symbols = torch.full([batch_size, self.n_time_steps + 1], self._start, dtype=torch.int64, device=self.device)
-            cand_finished = torch.zeros(batch_size, dtype=torch.uint8, device=self.device)
+            cand_finished = torch.zeros(batch_size, device=self.device).bool()
 
             cand_alphas = torch.zeros(batch_size, self.n_time_steps + 1, features.size(1), dtype=torch.float32, device=self.device)
 
