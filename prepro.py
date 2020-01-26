@@ -123,7 +123,7 @@ def _process_action_data(phase, actions_root, actions_file_path, word_to_idx):
     max_len = 0
     
     for file_name in os.listdir(actions_dir):
-        annotation = load_json(os.path.join(file_name, file_name))
+        annotation = load_json(os.path.join(actions_dir, file_name))
         image_name = os.path.splitext(annotation['video'])[0]
         actions = annotation['clip'][0]['label'].split()
         actions = list(set([word_to_idx[word] for word in actions]))
