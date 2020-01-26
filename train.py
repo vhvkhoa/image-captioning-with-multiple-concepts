@@ -23,7 +23,7 @@ parser.add_argument('--optimizer', type=str, default='rmsprop', help='Optimizer 
 parser.add_argument('--learning_rate', type=float, default=0.0001, help='Initial learning rate.')
 parser.add_argument('--num_epochs', type=int, default=10, help='Number of epochs.')
 parser.add_argument('--batch_size', type=int, default=128, help='Number of examples per mini-batch.')
-parser.add_argument('--eval_steps', type=int, default=100, help='Evaluate and save current model every eval_steps steps.')
+parser.add_argument('--eval_steps', type=int, default=3, help='Evaluate and save current model every eval_steps steps.')
 parser.add_argument('--metric', type=str, default='CIDEr', help='Metric being based on to choose best model, please insert on of these strings: [Bleu_i, METEOR, ROUGE_L, CIDEr] with i is 1 through 4.')
 parser.add_argument('--checkpoint', type=str, help='Path to a pretrained model to initiate weights from.') 
 parser.add_argument('--checkpoint_dir', type=str, default='checkpoint/', help='Path to directory where checkpoints saved every eval_steps.')
