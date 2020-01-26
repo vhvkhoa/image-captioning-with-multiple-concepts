@@ -133,7 +133,7 @@ def _process_action_data(phase, actions_root, actions_file_path, word_to_idx):
         actions_dict[image_name] = actions
         max_len = max(max_len, len(actions))
     
-    print('Max number of word-concepts: ', max_len)
+    print('Max number of word-actions: ', max_len)
 
     for image_name, actions in actions_dict.items():
         for _ in range(max_len - len(actions)):
