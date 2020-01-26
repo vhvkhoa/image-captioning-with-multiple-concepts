@@ -71,6 +71,7 @@ class CaptionGenerator(nn.Module):
         return c, h
 
     def project_features(self, features, project_layer):
+        print(features.size())
         batch, loc, dim = features.size()
         features_flat = features.view(-1, dim)
         features_proj = F.relu(project_layer(features_flat))
