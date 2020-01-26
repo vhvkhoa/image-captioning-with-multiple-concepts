@@ -78,8 +78,8 @@ class CaptioningSolver(object):
             self.init_best_scores = {score_name: 0. for score_name in self.capture_scores}
 
         if not self.is_test:
-            self.train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4, collate_fn=pack_collate_fn)
-            self.val_loader = DataLoader(val_dataset, batch_size=self.batch_size, num_workers=4)
+            self.train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=8, collate_fn=pack_collate_fn)
+            self.val_loader = DataLoader(val_dataset, batch_size=self.batch_size, num_workers=8)
 
             # set an optimizer by update rule
             if self.update_rule == 'adam':
@@ -271,7 +271,7 @@ class CaptioningSolver(object):
         features, tags, actions, scene_feats, image_ids = batch
         cap_vecs, alphas = self.beam_decoder.decode(features, tags, actions, scene_feats)
         captions, masks = decode_captions(cap_vecs.cpu().numpy(), alphas.cpu().numpy(), self.idx_to_word)
-        #image_ids = image_ids.numpy()
+        image_ids = image_ids.numpy()
         for image_id, caption, mask in zip(image_ids, captions, masks):
             engine.state.captions.append({'image_id': image_id, 'caption': caption})
 
