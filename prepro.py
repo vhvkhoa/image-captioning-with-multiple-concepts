@@ -8,6 +8,7 @@ import numpy as np
 import os
 from tqdm import tqdm
 import argparse
+import sys
 
 ANN_DIR = 'data/annotations'
 ANN_FILES = {
@@ -94,7 +95,7 @@ def _process_captions_data(phase, ann_file=None, max_length=None):
         return captions_data
 
 
-def _process_concept_data(phase, word_to_idx, concept_file, max_keep=20, max_length=23):
+def _process_concept_data(phase, word_to_idx, concept_file, max_keep=20):
     concepts_data = load_json(concept_file)
     concepts_dict = {}
     max_len = 0
@@ -116,6 +117,7 @@ def _process_concept_data(phase, word_to_idx, concept_file, max_keep=20, max_len
 
     save_json(concepts_dict, os.path.join('data', phase, os.path.basename(concept_file)))
     print('Finished building %s concept vectors' % phase)
+    print('Maximum number of concepts is %d.' % max_len)
 
 
 def _process_action_data(phase, actions_root, actions_file_path, word_to_idx):
@@ -137,7 +139,8 @@ def _process_action_data(phase, actions_root, actions_file_path, word_to_idx):
         actions_dict[image_name] = actions
 
     save_json(actions_dict, actions_file_path)
-    print('Finished building %s action vectors' % phase)
+    print('Finished building %s action vectors.' % phase)
+    print('Maximum number of action is %d.' % max_len)
 
 
 def _build_vocab(captions_data, tag_names_data, action_names_data, threshold=1, vocab_size=0):
@@ -250,6 +253,7 @@ def main():
         _process_action_data(phase, ACTION_ROOT, action_file, word_to_idx)
 
     print('Finished processing caption data')
+    sys.exit()
 
     feature_extractor = FeatureExtractor(model_name='resnet101', layer=3)
     for phase in phases:

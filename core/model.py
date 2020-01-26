@@ -25,10 +25,10 @@ class CaptionGenerator(nn.Module):
         self.enable_selector = enable_selector
         self.dropout = dropout
         self.V = len_vocab
-        self.L = feature_dim[0] #number of regions
-        self.D = feature_dim[1] #size of each region feature
-        self.T = num_tags #number of tags
-        self.A = kwargs.get('num_actions', 0)# number of actions
+        self.L = feature_dim[0]  # number of regions
+        self.D = feature_dim[1]  # size of each region feature
+        self.T = num_tags  # number of tags
+        self.A = kwargs.get('num_actions', 6)  # number of actions
         self.M = embed_dim
         self.S = kwargs.get('scene_dim', 0)
         self.AD = kwargs.get('action_dim', 0)
