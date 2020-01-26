@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description='Train model.')
 """Model's parameters"""
 parser.add_argument('--image_feature_size', type=int, default=196, help='Multiplication of width and height of image feature\'s dimension, e.g 14x14=196 in the original paper.')
 parser.add_argument('--image_feature_depth', type=int, default=1024, help='Depth dimension of image feature, e.g 512 if you extract features at conv-5 of VGG-16 model.')
-parser.add_argument('--lstm_hidden_size', type=int, default=1536, help='Hidden layer size for LSTM cell.')
+parser.add_argument('--lstm_hidden_size', type=int, default=1024, help='Hidden layer size for LSTM cell.')
 parser.add_argument('--time_steps', type=int, default=31, help='Number of time steps to be iterating through.')
 parser.add_argument('--embed_dim', type=int, default=512, help='Embedding space size for embedding tokens.')
 parser.add_argument('--beam_size', type=int, default=3, help='Beam size for inference phase.')
