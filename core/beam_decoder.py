@@ -30,7 +30,7 @@ class BeamSearchDecoder(object):
             features_proj = self.model.project_features(features, self.model.feats_proj_layer)
             tags_proj = self.model.project_features(tags_embed, self.model.tags_proj_layer)
             actions_proj = self.model.project_features(actions_embed, self.model.actions_proj_layer)
-            scene_feats_proj = self.model.project_features(scene_feats, self.model.scene_feats_proj_layer)
+            scene_feats_proj = self.model.project_features(scene_feats.unsqueeze(1), self.model.scene_feats_proj_layer).squeeze(1)
             hidden_states, cell_states = self.model.get_initial_lstm(features_proj, tags_proj, actions_proj, scene_feats_proj)
             beam_hidden_states = hidden_states.unsqueeze(0)
             beam_cell_states = cell_states.unsqueeze(0)
