@@ -28,14 +28,19 @@ parser.add_argument('--metric', type=str, default='CIDEr', help='Metric being ba
 parser.add_argument('--checkpoint', type=str, help='Path to a pretrained model to initiate weights from.') 
 parser.add_argument('--checkpoint_dir', type=str, default='checkpoint/', help='Path to directory where checkpoints saved every eval_steps.')
 parser.add_argument('--log_path', type=str, default='log/', help='Path to directory where logs saved during the training process. You can use tensorboard to visualize logging informations and re-read IFO printed on the console in .log files.')
+parser.add_argument('--scene_dir', type=str, default='data/annotations/scene_features/raw/')
 
 def main():
     args = parser.parse_args()
     # load train dataset
     train_data = CocoCaptionDataset(caption_file='./data/train/captions_train2017.json', 
-                                    concept_file='./data/train/train_concepts.json', split='train')
+                                    concept_file='./data/train/train_concepts.json',
+                                    action_file='./data/train/train_actions.json',
+                                    scene_dir=args.scene_dir, split='train')
     val_data = CocoCaptionDataset(caption_file='./data/val/captions_val2017.json',
-                                  concept_file='./data/val/val_concepts.json', split='val')
+                                  concept_file='./data/val/val_concepts.json',
+                                  action_file='./data/val/val_actions.json',
+                                  scene_dir=args.scene_dir, split='val')
     word_to_idx = train_data.get_vocab_dict()
     # load val dataset to print out scores every epoch
 
