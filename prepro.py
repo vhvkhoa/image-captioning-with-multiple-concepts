@@ -109,6 +109,7 @@ def _process_concept_data(phase, word_to_idx, concept_file, max_keep=20):
         max_len = max(max_len, len(concepts))
     
     print('Max number of word-concepts: ', max_len)
+
     for file_name in concepts_dict.keys():
         concepts = concepts_dict[file_name]
         for _ in range(max_len - len(concepts)):
@@ -117,7 +118,6 @@ def _process_concept_data(phase, word_to_idx, concept_file, max_keep=20):
 
     save_json(concepts_dict, os.path.join('data', phase, os.path.basename(concept_file)))
     print('Finished building %s concept vectors' % phase)
-    print('Maximum number of concepts is %d.' % max_len)
 
 
 def _process_action_data(phase, actions_root, actions_file_path, word_to_idx):
@@ -133,6 +133,8 @@ def _process_action_data(phase, actions_root, actions_file_path, word_to_idx):
         actions_dict[image_name] = actions
         max_len = max(max_len, len(actions))
     
+    print('Max number of word-concepts: ', max_len)
+
     for image_name, actions in actions_dict.items():
         for _ in range(max_len - len(actions)):
             actions.append(word_to_idx['<NULL>'])
@@ -140,7 +142,6 @@ def _process_action_data(phase, actions_root, actions_file_path, word_to_idx):
 
     save_json(actions_dict, actions_file_path)
     print('Finished building %s action vectors.' % phase)
-    print('Maximum number of action is %d.' % max_len)
 
 
 def _build_vocab(captions_data, tag_names_data, action_names_data, threshold=1, vocab_size=0):
