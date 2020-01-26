@@ -57,6 +57,9 @@ class CaptionGenerator(nn.Module):
 
         self.hidden_to_embedding_layer = nn.Linear(self.H, self.M)
         self.features_context_to_embedding_layer = nn.Linear(self.D, self.M)
+        self.tags_context_to_embedding_layer = nn.Linear(self.M, self.M)
+        self.actions_context_to_embedding_layer = nn.Linear(self.M, self.M)
+        self.scene_context_to_embedding_layer = nn.Linear(self.H, self.M)
         self.embedding_to_output_layer = nn.Linear(self.M, self.V)
 
         # functional layers
@@ -104,7 +107,10 @@ class CaptionGenerator(nn.Module):
         h_logits = self.hidden_to_embedding_layer(h)
 
         if self.ctx2out:
-            h_logits += self.features_context_to_embedding_layer(feats_context) + tags_context + actions_context + scene_context
+            h_logits += self.features_context_to_embedding_layer(feats_context)
+            h_logits += self.tags_context_to_embedding_layer(tags_context)
+            h_logits += self.actions_context_to_embedding_layer(actions_context)
+            h_logits += self.scene_context_to_embedding_layer(scene_context)
 
         if self.prev2out:
             h_logits += x
