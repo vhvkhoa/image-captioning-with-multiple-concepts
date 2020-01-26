@@ -26,7 +26,6 @@ def pack_collate_fn(batch):
     seq_lens = torch.tensor([[len(cap_vec)] for cap_vec in len_sorted_cap_vecs], dtype=torch.float)
 
     packed_cap_vecs = nn.utils.rnn.pack_sequence([torch.from_numpy(cap_vec) for cap_vec in len_sorted_cap_vecs])
-    cap, batch = packed_cap_vecs
 
     return len_sorted_features, len_sorted_tags, len_sorted_actions, len_sorted_scene_feats, packed_cap_vecs, len_sorted_captions, seq_lens
 
@@ -200,7 +199,7 @@ class CaptioningSolver(object):
         actions = actions.to(device=self.device)
         scene_feats = scene_feats.to(device=self.device)
         seq_lens = seq_lens.to(device=self.device)
-        cap_vecs, batch_sizes = packed_cap_vecs
+        cap_vecs, batch_sizes = packed_cap_vecs.data, packed_cap_vecs.batch_sizes
         cap_vecs = cap_vecs.to(device=self.device)
         batch_sizes = batch_sizes.to(device=self.device)
         features = self.model.batch_norm(features)
