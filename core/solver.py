@@ -273,8 +273,7 @@ class CaptioningSolver(object):
         captions, masks = decode_captions(cap_vecs.cpu().numpy(), alphas.cpu().numpy(), self.idx_to_word)
         image_ids = image_ids.numpy()
         for image_id, caption, mask in zip(image_ids, captions, masks):
-            print(image_id, type(image_id), caption, type(caption))
-            engine.state.captions.append({'image_id': image_id, 'caption': caption})
+            engine.state.captions.append({'image_id': int(image_id), 'caption': caption})
 
     def train(self, num_epochs=10):
         self.train_engine.run(self.train_loader, max_epochs=num_epochs)
