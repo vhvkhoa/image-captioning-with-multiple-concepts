@@ -269,7 +269,7 @@ class CaptioningSolver(object):
     def _test(self, engine, batch):
         self.model.eval()
         features, tags, actions, scene_feats, image_ids = batch
-        cap_vecs, alphas = self.beam_decoder.decode(features, tags, actions_scene_feats)
+        cap_vecs, alphas = self.beam_decoder.decode(features, tags, actions, scene_feats)
         captions, masks = decode_captions(cap_vecs.cpu().numpy(), alphas.cpu().numpy(), self.idx_to_word)
         #image_ids = image_ids.numpy()
         for image_id, caption, mask in zip(image_ids, captions, masks):
