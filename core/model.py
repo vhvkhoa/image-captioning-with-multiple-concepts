@@ -30,8 +30,8 @@ class CaptionGenerator(nn.Module):
         self.T = num_tags  # number of tags
         self.A = kwargs.get('num_actions', 6)  # number of actions
         self.M = embed_dim
-        self.S = kwargs.get('scene_dim', 0)
-        self.AD = kwargs.get('action_dim', 0)
+        self.S = kwargs.get('scene_dim', 512)
+        self.AD = kwargs.get('action_dim', self.M)
         self.H = hidden_dim
 
         # Trainable parameters :
